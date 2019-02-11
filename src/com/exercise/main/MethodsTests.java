@@ -21,27 +21,28 @@ public class MethodsTests {
 	
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
+			
 		try {
 			hoursWorkedByEmployees = CalculationMethods.readFile(); 		
 			for(String hours:hoursWorkedByEmployees) {
 				informationFormated = CalculationMethods.formatInformation(hours);
 				employeeName = CalculationMethods.extractEmployeeName(informationFormated);
 				workedDays = CalculationMethods.extractWorkedDay(informationFormated);
-				workedHours = CalculationMethods.extractWorkingHours(informationFormated);
+				workedHours = CalculationMethods.extractWorkedHours(informationFormated);
 				workedHoursAndDays = CalculationMethods.createMapForWorkedHoursAndDays(workedHours, workedDays);
 				totalPayment = CalculationMethods.getTotalPayment(workedHoursAndDays);
 				
 				employee = new Employee(employeeName, workedHoursAndDays, totalPayment);
 				System.out.println("The amount to pay "+employee.getEmployeeName()+" is: "+employee.getPayment());
+				
 			}
-			
-			
+				
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	
 
 	}
 		

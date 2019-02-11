@@ -11,17 +11,23 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class CalculationMethods {
-	private static final String TXT_FILE_PATH = "F:\\David\\EclipseWorkspace\\Hours-calculation\\src\\com\\exercise\\resource\\Hours.txt";
+	private static final String TXT_FILE_PATH = "./src/com/exercise/resource/Hours.txt";
 	private static final String[] WORK_DAYS = {"MO","TU","WE","TH","FR","SA","SU"};
 	private static final String[] HOURS_INTERVAL = {"00:01-09:00","09:01-18:00","18:01-00:00"};
 	private static final LocalTime FORMAT_24H = LocalTime.of(00, 00);
 	private static final int[] HOUR_COST = {25, 15,20};
 	private static final int WEEKEND_EXTRA_HOUR_COST = 5;
-	public static int totalPaid;
+	public static int totalPayment;
 	
+	/**
+	 * Reads the file stored in TXT_FILE_PATH path
+	 * @return scheduleWorked The schedule worked by each employee.
+	 * @throws IOException if the scanner fails to read the file
+	 */
 	public static List<String> readFile() throws IOException {
-		File file = new File(TXT_FILE_PATH); 
-		Scanner scanner = new Scanner(file);
+		 
+		File hoursFile = new File(TXT_FILE_PATH); 
+		Scanner scanner = new Scanner(hoursFile);
 		
 		List<String> scheduleWorked = new ArrayList<>();
 		int i = 0;
@@ -37,57 +43,91 @@ public class CalculationMethods {
 	}
 		
 	/**
-	 * Format the input information
-	 * @param input 
-	 * @return informationFormated 
+	 * Formats the input information from a String object
+	 * @param inputInformation the input information that must follow this structure: 
+	 * 																<EmployeeName>=<DayWorked>:<schedule worked>,<DayWorked>:<schedule worked>,....
+	 * 																ASTRID=MO10:00-12:00,TH12:00-14:00,SU20:00-21:00
+	 * @return informationFormated the information formated as shows in this example:
+	 * 							    								ASTRID
+																	MO10:00-12:00
+																	TH12:00-14:00
+																	SU20:00-21:00
+	 * @throws NullPointerException if inputInformation is null
 	 */
-	public static String[] formatInformation(String input) {
-		String[] informationFormated = input.split("=|,");
+	public static String[] formatInformation(String inputInformation) throws NullPointerException{
+		String[] informationFormated = inputInformation.split("=|,");
 		return informationFormated;
 	}
 	
 	/**
-	 * Extract the employee's name from an input previously formated by formatInformation method
-	 * @param informationFormated  
-	 * @return employeeName
+	 * Retrieves the employee's name from an input previously formated by formatInformation method
+	 * @param informationFormated the information that must be previously formated 
+	 * @return employeeName the employee's name 
+	 * @throws NullPointerException if informationFormated is null
 	 */
-	public static String extractEmployeeName (String[] informationFormated) {
-		String employeeName = "";
-		employeeName = informationFormated[0];
+	public static String extractEmployeeName (String[] informationFormated) throws NullPointerException{
+		String employeeName = informationFormated[0];
 		return employeeName;
 	}
-	
-	public static String[] extractWorkedDay(String[] informationFormated) {
+	/**
+	 * Retrieves the employee's worked day  
+	 * @param informationFormated the information that must be previously formated by formatInformation method
+	 * @return workDay the day in which the employee worked
+	 * @throws NullPointerException if informationFormated is null
+	 */
+	public static String[] extractWorkedDay(String[] informationFormated) throws NullPointerException{
 		String[] workedDay= new String[informationFormated.length-1];
 		for(int i = 1;i<informationFormated.length;i++)
 			workedDay[i-1]=informationFormated[i].substring(0, 2);
 		return workedDay;
 	}
 	
-	public static String[] extractWorkingHours(String[] informationFormated) {
-		String[] workingHours = new String[informationFormated.length-1];
+	/**
+	 * Retrieves the employee's worked hours
+	 * @param informationFormated the information that must be previously formated by formatInformation method
+	 * @return woredHours the hours worked by the employee
+	 * @throws NullPointerException if informationFormated is null
+	 */
+	public static String[] extractWorkedHours(String[] informationFormated) throws NullPointerException {
+		String[] workedHours = new String[informationFormated.length-1];
 		for(int i = 1;i<informationFormated.length;i++)
-			workingHours[i-1]=informationFormated[i].substring(2);
-		return workingHours;
+			workedHours[i-1]=informationFormated[i].substring(2);
+		return workedHours;
 	}
 	
-	public static void printResults(String[] restultsToBePrinted) {
+	/**
+	 * Prints the items contained in a String array
+	 * @param restultsToBePrinted the array to be printed
+	 * @throws NullPointerException if restultsToBePrinted is null
+	 */
+	public static void printResults(String[] restultsToBePrinted) throws NullPointerException{
 		for(String item:restultsToBePrinted)
 			System.out.println(item);
 		
 	}
 	
-	public static Map<String,String> createMapForWorkedHoursAndDays(String[] workingHours, String[] workedDays){
-		Map<String, String> map = new HashMap<String,String>();
-		for(int i = 0;i<workingHours.length;i++) {
-			map.put(workedDays[i], workingHours[i]);
+	/**
+	 * Creates a Map with the worked days and hours by the employee
+	 * @param workedHours the employee's worked hours
+	 * @param workedDays the employee's worked days
+	 * @return workedHoursAndDaysMap the map that contains the worked days with	the worked hours by the employee
+	 * @throws NullPointerException if workedHours and workedDays are null
+	 */
+	public static Map<String,String> createMapForWorkedHoursAndDays(String[] workedHours, String[] workedDays) throws NullPointerException{
+		Map<String, String> workedHoursAndDaysMap = new HashMap<String,String>();
+		for(int i = 0;i<workedHours.length;i++) {
+			workedHoursAndDaysMap.put(workedDays[i], workedHours[i]);
 		}
-		return map;
+		return workedHoursAndDaysMap;
 	}
 	
-	
-	public static int getTotalPayment(Map<String, String> workedHoursAndDays) {
-		totalPaid = 0;
+	/**
+	 * Retrieves the total payment of the hours worked in the week to the employee
+	 * @return totalPay the employee's total payment 
+	 * @throws NullPointerException if workedHoursAndDays is null 
+	 */
+	public static int getTotalPayment(Map<String, String> workedHoursAndDays) throws NullPointerException{
+		totalPayment = 0;
 		for(String workday:WORK_DAYS) {
 			
 			String hoursWorked = workedHoursAndDays.get(workday); 
@@ -97,16 +137,21 @@ public class CalculationMethods {
 				LocalTime[] hoursWorkedTransformed = CalculationMethods.transformToLocalTimeFormat(hoursWorked);
 				
 				if(workday.equals("SA") || workday.equals("SU"))
-					totalPaid += calculatePaymentForHours(hoursWorkedTransformed[0], hoursWorkedTransformed[1], true);
+					totalPayment += calculateDayPayment(hoursWorkedTransformed[0], hoursWorkedTransformed[1], true);
 				else 
-					totalPaid += calculatePaymentForHours(hoursWorkedTransformed[0], hoursWorkedTransformed[1], false);
+					totalPayment += calculateDayPayment(hoursWorkedTransformed[0], hoursWorkedTransformed[1], false);
 			}
 						
 		}
-		return totalPaid;
+		return totalPayment;
 	}
-	
-	public static LocalTime[] transformToLocalTimeFormat(String interval){
+	/**
+	 * Transforms the  hours schedule from String object to LocalTime object 
+	 * @param interval the hours schedule. Example: 11:00-12:00
+	 * @return intervalHoursInLocalTime the hours schedule transformed in LocalTime objects
+	 * @throws NullPointerException if the interval is null
+	 */
+	public static LocalTime[] transformToLocalTimeFormat(String interval)throws NullPointerException{
 		String[] intervalHours = interval.split("-");
 		LocalTime[] intervalHoursInLocalTime = new LocalTime[2];
 		
@@ -116,14 +161,27 @@ public class CalculationMethods {
 		return intervalHoursInLocalTime;
 	
 	}
-	
-	public static int differenceBetwaeenHours(LocalTime startTime, LocalTime endingTime) {
-		Duration timeDifference = Duration.between(startTime, endingTime);
+	/**
+	 * Retrieves the difference between the starting hour and ending hour of employee's work schedule 
+	 * @param startingHour the starting hour of employee's work schedule
+	 * @param endingHour the ending hour of employee's work schedule
+	 * @return timeDifference the time difference in hours
+	 * @throws NullPointerException if startingHour and endingHour are null
+	 */
+	public static int differenceBetwaeenHours(LocalTime startingHour, LocalTime endingHour) throws NullPointerException{
+		Duration timeDifference = Duration.between(startingHour, endingHour);
 		return (int)(timeDifference.toHours());
 	}
-	
-	public static int calculatePaymentForHours(LocalTime startTime, LocalTime endingTime, boolean isWeekend) {
-		int totalToPay = 0;
+	/**
+	 * Calculates the payment of hours worked on each day of the week to the employee
+	 * @param startingHour the starting hour of employee's work schedule
+	 * @param endingHour the ending hour of employee's work schedule
+	 * @param isWeekend true if the employee worked on saturday or sunday and false if the employee worked on monday to friday 
+	 * @return totalDayPay the employee's pay received on the day worked
+	 * @throws NullPointerException if startingHour, endingHour and isWeekend are null
+	 */
+	public static int calculateDayPayment(LocalTime startingHour, LocalTime endingHour, boolean isWeekend) throws NullPointerException{
+		int totalDayPay = 0;
 		int paymentByWorkInWeekend = 0;
 		boolean lowBoundaryTime = false;
 		boolean topBoundaryTime = false;
@@ -138,23 +196,23 @@ public class CalculationMethods {
 			if(hoursIntervalTransformed[1]==FORMAT_24H)
 				hoursIntervalTransformed[1] = LocalTime.of(23, 59);
 			
-			if(hoursIntervalTransformed[0] == startTime)
+			if(hoursIntervalTransformed[0] == startingHour)
 				lowBoundaryTime = true;
 			
-			if(hoursIntervalTransformed[1] == endingTime)
+			if(hoursIntervalTransformed[1] == endingHour)
 				topBoundaryTime = true;
 						
 			if(lowBoundaryTime == true || topBoundaryTime == true)
-				totalToPay = (HOUR_COST[i]+paymentByWorkInWeekend)*differenceBetwaeenHours(startTime, endingTime);
+				totalDayPay = (HOUR_COST[i]+paymentByWorkInWeekend)*differenceBetwaeenHours(startingHour, endingHour);
 						
-			if(hoursIntervalTransformed[0].isBefore(startTime)&&hoursIntervalTransformed[1].isAfter(endingTime)) 
-				totalToPay = (HOUR_COST[i]+paymentByWorkInWeekend)*differenceBetwaeenHours(startTime, endingTime);
+			if(hoursIntervalTransformed[0].isBefore(startingHour)&&hoursIntervalTransformed[1].isAfter(endingHour)) 
+				totalDayPay = (HOUR_COST[i]+paymentByWorkInWeekend)*differenceBetwaeenHours(startingHour, endingHour);
 			
 			lowBoundaryTime = false;
 			topBoundaryTime = false;
 			
 		}
-		return totalToPay;
+		return totalDayPay;
 		
 	}
 	
