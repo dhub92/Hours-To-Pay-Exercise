@@ -5,9 +5,9 @@ import java.util.Map;
 public class Employee {
 	private String employeeName;
 	private Map<String,String> workedHoursAndDays;
-	private int payment;
+	private double payment;
 	
-	public Employee(String employeeName, Map<String, String> workedHoursAndDays, int payment) {
+	public Employee(String employeeName, Map<String, String> workedHoursAndDays, double payment) {
 		super();
 		this.employeeName = employeeName;
 		this.workedHoursAndDays = workedHoursAndDays;
@@ -30,11 +30,11 @@ public class Employee {
 		this.workedHoursAndDays = workedHoursAndDays;
 	}
 
-	public int getPayment() {
+	public double getPayment() {
 		return payment;
 	}
 
-	public void setPayment(int payment) {
+	public void setPayment(double payment) {
 		this.payment = payment;
 	}
 	

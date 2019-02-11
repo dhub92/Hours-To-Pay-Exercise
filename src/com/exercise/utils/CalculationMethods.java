@@ -2,7 +2,6 @@ package com.exercise.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -19,6 +18,7 @@ public class CalculationMethods {
 	private static final LocalTime FORMAT_24H = LocalTime.of(00, 00);
 	private static final int[] HOUR_COST = { 25, 15, 20 };
 	private static final int WEEKEND_EXTRA_HOUR_COST = 5;
+	private static final int MINUTES_IN_HOUR = 60;
 	public static int totalPayment;
 
 	/**
@@ -113,20 +113,6 @@ public class CalculationMethods {
 	}
 
 	/**
-	 * Prints the items contained in a String array
-	 * 
-	 * @param restultsToBePrinted
-	 *            the array to be printed
-	 * @throws NullPointerException
-	 *             if restultsToBePrinted is null
-	 */
-	public void printResults(String[] restultsToBePrinted) throws NullPointerException {
-		for (String item : restultsToBePrinted)
-			System.out.println(item);
-
-	}
-
-	/**
 	 * Creates a Map with the worked days and hours by the employee
 	 * 
 	 * @param workedHours
@@ -151,7 +137,7 @@ public class CalculationMethods {
 
 	/**
 	 * Retrieves the total payment of the hours worked in the week to the employee
-	 * 
+	 * @param workedHoursAndDays the worked hours and days linked it in a Map
 	 * @return totalPay the employee's total payment
 	 * @throws NullPointerException
 	 *             if workedHoursAndDays is null
@@ -162,19 +148,14 @@ public class CalculationMethods {
 			throws NullPointerException, DateTimeParseException {
 		totalPayment = 0;
 		for (String workday : WORK_DAYS) {
-
 			String hoursWorked = workedHoursAndDays.get(workday);
-
 			if (hoursWorked != null) {
-
 				LocalTime[] hoursWorkedTransformed = transformToLocalTimeFormat(hoursWorked);
-
 				if (workday.equals("SA") || workday.equals("SU"))
 					totalPayment += calculateDayPayment(hoursWorkedTransformed[0], hoursWorkedTransformed[1], true);
 				else
 					totalPayment += calculateDayPayment(hoursWorkedTransformed[0], hoursWorkedTransformed[1], false);
 			}
-
 		}
 		return totalPayment;
 	}
@@ -216,10 +197,10 @@ public class CalculationMethods {
 	 * @throws DateTimeParseException
 	 *             if startingHour and endingHour are cannot be parsed
 	 */
-	public int differenceBetwaeenHours(LocalTime startingHour, LocalTime endingHour)
+	public double differenceBetwaeenHours(LocalTime startingHour, LocalTime endingHour)
 			throws NullPointerException, DateTimeParseException {
 		Duration timeDifference = Duration.between(startingHour, endingHour);
-		return (int) (timeDifference.toHours());
+		return (double) (timeDifference.toMinutes())/MINUTES_IN_HOUR;
 	}
 
 	/**
@@ -239,9 +220,9 @@ public class CalculationMethods {
 	 * @throws DateTimeParseException
 	 *             if the interval hours cannot be transformed to LocalTime
 	 */
-	public int calculateDayPayment(LocalTime startingHour, LocalTime endingHour, boolean isWeekend)
+	public double calculateDayPayment(LocalTime startingHour, LocalTime endingHour, boolean isWeekend)
 			throws NullPointerException, DateTimeParseException {
-		int totalDayPay = 0;
+		double totalDayPay = 0;
 		int paymentByWorkInWeekend = 0;
 		boolean lowBoundaryTime = false;
 		boolean topBoundaryTime = false;
@@ -251,7 +232,6 @@ public class CalculationMethods {
 
 		for (int i = 0; i < HOURS_INTERVAL.length; i++) {
 			LocalTime[] hoursIntervalTransformed = transformToLocalTimeFormat(HOURS_INTERVAL[i]);
-
 			// transform 00:00 (24:00) to 23:59
 			if (hoursIntervalTransformed[1] == FORMAT_24H)
 				hoursIntervalTransformed[1] = LocalTime.of(23, 59);
@@ -265,21 +245,17 @@ public class CalculationMethods {
 			if (lowBoundaryTime == true || topBoundaryTime == true)
 				totalDayPay = (HOUR_COST[i] + paymentByWorkInWeekend)
 						* differenceBetwaeenHours(startingHour, endingHour);
-
-			if (hoursIntervalTransformed[0].isBefore(startingHour) && hoursIntervalTransformed[1].isAfter(endingHour))
+			// if the hours worked interval is inside of the schedule interval
+			if (hoursIntervalTransformed[0].isBefore(startingHour) && hoursIntervalTransformed[1].isAfter(endingHour)) {
 				totalDayPay = (HOUR_COST[i] + paymentByWorkInWeekend)
 						* differenceBetwaeenHours(startingHour, endingHour);
+			}
 
 			lowBoundaryTime = false;
 			topBoundaryTime = false;
 
 		}
 		return totalDayPay;
-
-	}
-
-	public void printErrorMessage(String errorMessage) {
-		System.out.println("Error: " + errorMessage);
 
 	}
 
