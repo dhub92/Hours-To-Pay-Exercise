@@ -20,7 +20,7 @@ The amount to pay ASTRID is: 85
 The amount to pay DAVID is: 325
 ```
 ## Design description
-The programa is composed by four packages:
+The program is composed by four packages:
 ### com.exercise.main
 Here there is the class called **MethodsUseExample** which contains the main method to run the program.
 ### com.exercise.model
@@ -28,7 +28,7 @@ Here there is the POJO class called **Employee** which contains the employee's a
 ### com.exercise.resource
 Here there is the txt file called **Hours** which contains the input information structured as show above. 
 ### com.exercise.test
-Here there is the JUnit class **TestCalculationMethods**....
+Here there is the JUnit class **TestCalculationMethods** which contains methods for testing the methods of the class **Calculate Methods**. Also, this class can test the exceptions thrown by that methods.
 ### com.exercise.utils
 Here there is the class called **CalculationMethods** which contains all the logic of the program. The methods inside this class are responsable for extract the information of the txt file **Hours**, format it and make the calculations needed for know the employee's payment.
 
