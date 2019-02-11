@@ -1,6 +1,6 @@
 package com.exercise.main;
 
-import java.io.IOException;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +8,7 @@ import com.exercise.model.Employee;
 import com.exercise.utils.CalculationMethods;
 
 
-public class MethodsTests {
+public class MethodsUseExample {
 		
 	public static Employee employee;
 	public static String[] informationFormated;
@@ -21,31 +21,33 @@ public class MethodsTests {
 	
 	
 	public static void main(String[] args) {
-			
+		CalculationMethods cm = new CalculationMethods();
 		try {
-			hoursWorkedByEmployees = CalculationMethods.readFile(); 		
+			hoursWorkedByEmployees = cm.readFile(); 		
 			for(String hours:hoursWorkedByEmployees) {
-				informationFormated = CalculationMethods.formatInformation(hours);
-				employeeName = CalculationMethods.extractEmployeeName(informationFormated);
-				workedDays = CalculationMethods.extractWorkedDay(informationFormated);
-				workedHours = CalculationMethods.extractWorkedHours(informationFormated);
-				workedHoursAndDays = CalculationMethods.createMapForWorkedHoursAndDays(workedHours, workedDays);
-				totalPayment = CalculationMethods.getTotalPayment(workedHoursAndDays);
+				informationFormated = cm.formatInformation(hours);
+				employeeName = cm.extractEmployeeName(informationFormated);
+				workedDays = cm.extractWorkedDay(informationFormated);
+				workedHours = cm.extractWorkedHours(informationFormated);
+				workedHoursAndDays = cm.createMapForWorkedHoursAndDays(workedHours, workedDays);
+				totalPayment = cm.getTotalPayment(workedHoursAndDays);
 				
 				employee = new Employee(employeeName, workedHoursAndDays, totalPayment);
 				System.out.println("The amount to pay "+employee.getEmployeeName()+" is: "+employee.getPayment());
 				
 			}
 				
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (DateTimeParseException e) {
+			cm.printErrorMessage(e.getMessage());
+			
+		}catch (NullPointerException e) {
+			cm.printErrorMessage(e.getMessage());
+		}  catch (Exception e) {
+			cm.printErrorMessage(e.getMessage());
 		}
 	
-
 	}
-		
+	
 	
 
 }
