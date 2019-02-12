@@ -14,12 +14,12 @@ import java.util.Scanner;
 public class CalculationMethods {
 	private static final String TXT_FILE_PATH = "./src/com/exercise/resource/Hours.txt";
 	private static final String[] WORK_DAYS = { "MO", "TU", "WE", "TH", "FR", "SA", "SU" };
-	private static final String[] HOURS_INTERVAL = { "00:01-09:00", "09:01-18:00", "18:01-00:00" };
+	private static final String[] SCHEDULE = { "00:01-09:00", "09:01-18:00", "18:01-00:00" };
 	private static final LocalTime FORMAT_24H = LocalTime.of(00, 00);
 	private static final int[] HOUR_COST = { 25, 15, 20 };
 	private static final int WEEKEND_EXTRA_HOUR_COST = 5;
 	private static final int MINUTES_IN_HOUR = 60;
-	public static int totalPayment;
+	public static double totalPayment;
 
 	/**
 	 * Reads the file stored in TXT_FILE_PATH path
@@ -137,16 +137,18 @@ public class CalculationMethods {
 
 	/**
 	 * Retrieves the total payment of the hours worked in the week to the employee
-	 * @param workedHoursAndDays the worked hours and days linked it in a Map
+	 * 
+	 * @param workedHoursAndDays
+	 *            the worked hours and days linked it in a Map
 	 * @return totalPay the employee's total payment
 	 * @throws NullPointerException
 	 *             if workedHoursAndDays is null
 	 * @throws DateTimeParseException
 	 *             if the hoursWorked cannot be transformed
 	 */
-	public int getTotalPayment(Map<String, String> workedHoursAndDays)
+	public double getTotalPayment(Map<String, String> workedHoursAndDays)
 			throws NullPointerException, DateTimeParseException {
-		totalPayment = 0;
+		totalPayment = 0.0;
 		for (String workday : WORK_DAYS) {
 			String hoursWorked = workedHoursAndDays.get(workday);
 			if (hoursWorked != null) {
@@ -197,10 +199,10 @@ public class CalculationMethods {
 	 * @throws DateTimeParseException
 	 *             if startingHour and endingHour are cannot be parsed
 	 */
-	public double differenceBetwaeenHours(LocalTime startingHour, LocalTime endingHour)
+	public double differenceBetweenHours(LocalTime startingHour, LocalTime endingHour)
 			throws NullPointerException, DateTimeParseException {
 		Duration timeDifference = Duration.between(startingHour, endingHour);
-		return (double) (timeDifference.toMinutes())/MINUTES_IN_HOUR;
+		return (double) (timeDifference.toMinutes()) / MINUTES_IN_HOUR;
 	}
 
 	/**
@@ -223,6 +225,8 @@ public class CalculationMethods {
 	public double calculateDayPayment(LocalTime startingHour, LocalTime endingHour, boolean isWeekend)
 			throws NullPointerException, DateTimeParseException {
 		double totalDayPay = 0;
+		double firstPay = 0;
+		double secondPay = 0;
 		int paymentByWorkInWeekend = 0;
 		boolean lowBoundaryTime = false;
 		boolean topBoundaryTime = false;
@@ -230,25 +234,40 @@ public class CalculationMethods {
 		// Verify if the hours were worked in weekend
 		paymentByWorkInWeekend = isWeekend ? WEEKEND_EXTRA_HOUR_COST : 0;
 
-		for (int i = 0; i < HOURS_INTERVAL.length; i++) {
-			LocalTime[] hoursIntervalTransformed = transformToLocalTimeFormat(HOURS_INTERVAL[i]);
+		for (int i = 0; i < SCHEDULE.length; i++) {
+			LocalTime[] hoursIntervalTransformed = transformToLocalTimeFormat(SCHEDULE[i]);
+			LocalTime scheduleStarting = hoursIntervalTransformed[0];
+			LocalTime scheduleEnding = hoursIntervalTransformed[1];
 			// transform 00:00 (24:00) to 23:59
-			if (hoursIntervalTransformed[1] == FORMAT_24H)
-				hoursIntervalTransformed[1] = LocalTime.of(23, 59);
+			if (scheduleEnding == FORMAT_24H)
+				scheduleEnding = LocalTime.of(23, 59);
 
-			if (hoursIntervalTransformed[0] == startingHour)
+			if (scheduleStarting.equals(startingHour))
 				lowBoundaryTime = true;
 
-			if (hoursIntervalTransformed[1] == endingHour)
+			if (scheduleEnding.equals(endingHour))
 				topBoundaryTime = true;
 
-			if (lowBoundaryTime == true || topBoundaryTime == true)
+			if (lowBoundaryTime || topBoundaryTime)
 				totalDayPay = (HOUR_COST[i] + paymentByWorkInWeekend)
-						* differenceBetwaeenHours(startingHour, endingHour);
+						* differenceBetweenHours(startingHour, endingHour);
 			// if the hours worked interval is inside of the schedule interval
-			if (hoursIntervalTransformed[0].isBefore(startingHour) && hoursIntervalTransformed[1].isAfter(endingHour)) {
+			if (scheduleStarting.isBefore(startingHour) && scheduleEnding.isAfter(endingHour)) {
 				totalDayPay = (HOUR_COST[i] + paymentByWorkInWeekend)
-						* differenceBetwaeenHours(startingHour, endingHour);
+						* differenceBetweenHours(startingHour, endingHour);
+			}
+
+			// if the hours worked interval overlaps two schedule interval
+			if (isOverlaping(scheduleStarting, scheduleEnding, startingHour)) {
+				if (differenceBetweenHours(scheduleEnding, endingHour) > 0) {
+
+					firstPay = (HOUR_COST[i] + paymentByWorkInWeekend)
+							* differenceBetweenHours(startingHour, scheduleEnding);
+					secondPay = (HOUR_COST[i + 1] + paymentByWorkInWeekend)
+							* differenceBetweenHours(scheduleEnding, endingHour);
+					totalDayPay = firstPay + secondPay;
+				}
+
 			}
 
 			lowBoundaryTime = false;
@@ -257,6 +276,28 @@ public class CalculationMethods {
 		}
 		return totalDayPay;
 
+	}
+
+	/**
+	 * Verify if the working if the working hours overlap two schedules
+	 * 
+	 * @param scheduleStarting
+	 *            the beginning time of a schedule
+	 * @param scheduleEnding
+	 *            the ending time of a schedule
+	 * @param startingWorkedHours
+	 *            the beginning time in which the employee started working
+	 * @return true if the working hours overlap two schedules and false if it
+	 *         doesn't
+	 * @throws NullPointerException
+	 *             if scheduleStarting, scheduleEnding and/or startingWorkedHours
+	 * @throws DateTimeParseException
+	 *             if scheduleStarting, scheduleEnding and/or startingWorkedHours
+	 *             cannot be transformed to LocalTime
+	 */
+	public boolean isOverlaping(LocalTime scheduleStarting, LocalTime scheduleEnding,
+			LocalTime startingWorkedHours) throws NullPointerException, DateTimeParseException {
+		return scheduleStarting.isBefore(startingWorkedHours) && scheduleEnding.isAfter(startingWorkedHours);
 	}
 
 }

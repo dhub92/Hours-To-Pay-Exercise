@@ -47,7 +47,7 @@ public class TestCalculationMethods {
 
 	@Test
 	public void testExtractWorkedDay() {
-		String[] information = { "este no debe salir", "MO" };
+		String[] information = { "This souldn't be", "MO" };
 		String[] expected = { "MO" };
 		String[] actual = cm.extractWorkedDay(information);
 		assertArrayEquals(expected, actual);
@@ -61,7 +61,7 @@ public class TestCalculationMethods {
 
 	@Test
 	public void testExtractWorkedHours() {
-		String[] information = { "este no debe salir", "MO12:00-13:00" };
+		String[] information = { "This souldn't be", "MO12:00-13:00" };
 		String[] expected = { "12:00-13:00" };
 		String[] actual = cm.extractWorkedHours(information);
 		assertArrayEquals(expected, actual);
@@ -149,12 +149,40 @@ public class TestCalculationMethods {
 	
 	@Test
 	public void testDifferenceBetwaeenHours() {
-		double actual = cm.differenceBetwaeenHours(LocalTime.parse("10:00"), LocalTime.parse("11:00"));
+		double actual = cm.differenceBetweenHours(LocalTime.parse("10:00"), LocalTime.parse("11:00"));
 		assertEquals(1.0, actual, 0.01);
 	}
 
 	@Test(expected=NullPointerException.class)
 	public void testNullExceptionDifferenceBetwaeenHours() {
-		cm.differenceBetwaeenHours(null, null);
+		cm.differenceBetweenHours(null, null);
 	}
+	
+	@Test
+	public void testIsOverlaping() {
+		LocalTime scheduleStarting = LocalTime.parse("09:01");
+		LocalTime scheduleEnding = LocalTime.parse("18:00");
+		LocalTime startingWorkedHours = LocalTime.parse("15:00");
+		boolean expected = true;
+		boolean actual = cm.isOverlaping(scheduleStarting, scheduleEnding, startingWorkedHours);
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = NullPointerException.class)
+	public void testNullExceptionIsOverlaping() {
+		LocalTime scheduleStarting = LocalTime.parse(null);
+		LocalTime scheduleEnding = LocalTime.parse("18:00");
+		LocalTime startingWorkedHours = LocalTime.parse("15:00");
+		cm.isOverlaping(scheduleStarting, scheduleEnding, startingWorkedHours);
+	}
+	
+	@Test(expected = DateTimeParseException.class)
+	public void testDateTimeParseExceptionIsOverlaping() {
+		LocalTime scheduleStarting = LocalTime.parse("");
+		LocalTime scheduleEnding = LocalTime.parse("18:00");
+		LocalTime startingWorkedHours = LocalTime.parse("15:00");
+		cm.isOverlaping(scheduleStarting, scheduleEnding, startingWorkedHours);
+	}
+	
+	
 }
